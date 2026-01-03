@@ -14,17 +14,31 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "asyncpg>=0.30.0",
     "alembic>=1.14.0",
+    "structlog>=24.4.0",
+    "redis>=5.2.0",
+    "arq>=0.26.0",
+    "slowapi>=0.1.9",
+    "typer>=0.15.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
     "ruff>=0.8.0",
     "mypy>=1.13.0",
     "pre-commit>=4.0.0",
+    "fakeredis>=2.26.0",
 ]
+
+mongo = [
+    "motor>=3.6.0",
+]
+
+[project.scripts]
+app = "app.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -37,6 +51,7 @@ packages = ["src/app"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+addopts = "-v"
 
 [tool.ruff]
 target-version = "py313"
@@ -45,19 +60,19 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "SIM",    # flake8-simplify
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+    "ARG",
+    "SIM",
 ]
 ignore = [
-    "B008",   # Depends() in function signatures
-    "UP046",  # Generic[T] is more readable than type parameters for most developers
+    "B008",
+    "UP046",
 ]
 
 [tool.ruff.lint.isort]
@@ -68,12 +83,46 @@ python_version = "3.13"
 strict = true
 plugins = ["pydantic.mypy"]
 
+[[tool.mypy.overrides]]
+module = [
+    "arq.*",
+    "slowapi.*",
+    "motor.*",
+    "motor.motor_asyncio",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "app.infrastructure.persistence.repository.kv.base",
+    "app.infrastructure.persistence.repository.document.base",
+    "app.infrastructure.persistence.adapters.mongo",
+]
+disable_error_code = ["no-any-return", "misc", "attr-defined", "return-value", "import-not-found"]
+
+[[tool.mypy.overrides]]
+module = "tests.adapters.test_redis"
+disable_error_code = ["misc"]
+
+[tool.coverage.run]
+source = ["src/app"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
     "ruff>=0.8.0",
     "mypy>=1.13.0",
     "pre-commit>=4.0.0",
+    "fakeredis>=2.26.0",
 ]

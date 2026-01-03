@@ -36,6 +36,9 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 
+# Linting
+.ruff_cache/
+
 # Environment
 .env
 .env.local
@@ -47,6 +50,7 @@ htmlcov/
 
 # Logs
 *.log
+logs/
 
 # OS
 .DS_Store
@@ -57,3 +61,6 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# Alembic
+alembic/versions/*.pyc
