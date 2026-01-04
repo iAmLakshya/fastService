@@ -1,39 +1,50 @@
-from app.infrastructure import NotFoundError
+from app.infrastructure import BaseService, PageResult, paginate
+from app.infrastructure.constants import Pagination
 from app.modules.todos.model import Todo
 from app.modules.todos.repository import TodoRepository
 
 
-class TodoService:
-    def __init__(self) -> None:
-        self._repo = TodoRepository()
-
-    async def get_all(
-        self, skip: int = 0, limit: int = 100, completed: bool | None = None
+class TodoService(BaseService[Todo, TodoRepository]):
+    async def find_all(
+        self,
+        offset: int = 0,
+        limit: int = Pagination.DEFAULT_LIMIT,
+        include_deleted: bool = False,
+        *,
+        completed: bool | None = None,
     ) -> list[Todo]:
         if completed is not None:
-            return await self._repo.get_by_completed_status(completed, skip, limit)
-        return await self._repo.get_all(skip, limit)
+            return await self._repo.find_by_status(completed, offset, limit)
+        return await self._repo.find_all(offset, limit, include_deleted)
 
-    async def get_by_id(self, todo_id: str) -> Todo:
-        todo = await self._repo.get_by_id(todo_id)
-        if not todo:
-            raise NotFoundError("Todo", todo_id)
-        return todo
+    async def find_paginated(
+        self,
+        page: int = 1,
+        page_size: int = Pagination.DEFAULT_PAGE_SIZE,
+        include_deleted: bool = False,
+        *,
+        completed: bool | None = None,
+    ) -> PageResult[Todo]:
+        if completed is not None:
+            offset = (page - 1) * page_size
+            items = await self._repo.find_by_status(completed, offset, page_size)
+            total = await self._repo.count_by_status(completed)
+        else:
+            items, total = await self._repo.find_paginated(page, page_size, include_deleted)
 
-    async def create(self, title: str, description: str | None = None) -> Todo:
-        return await self._repo.create({
-            "title": title,
-            "description": description,
-        })
+        return paginate(items, total, page, page_size)
 
-    async def update(
+    async def create_todo(self, title: str, description: str | None = None) -> Todo:
+        return await self._repo.create({"title": title, "description": description})
+
+    async def update_todo(
         self,
         todo_id: str,
         title: str | None = None,
         description: str | None = None,
         completed: bool | None = None,
     ) -> Todo:
-        data = {}
+        data: dict[str, object] = {}
         if title is not None:
             data["title"] = title
         if description is not None:
@@ -41,15 +52,4 @@ class TodoService:
         if completed is not None:
             data["completed"] = completed
 
-        if not data:
-            return await self.get_by_id(todo_id)
-
-        todo = await self._repo.update(todo_id, data)
-        if not todo:
-            raise NotFoundError("Todo", todo_id)
-        return todo
-
-    async def delete(self, todo_id: str) -> None:
-        deleted = await self._repo.delete(todo_id)
-        if not deleted:
-            raise NotFoundError("Todo", todo_id)
+        return await self.update(todo_id, data)

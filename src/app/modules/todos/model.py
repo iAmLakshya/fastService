@@ -1,10 +1,10 @@
 from sqlalchemy import Boolean, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.infrastructure import Base, TimestampMixin, UUIDMixin
+from app.infrastructure.persistence import SoftDeletableModel
 
 
-class Todo(Base, UUIDMixin, TimestampMixin):
+class Todo(SoftDeletableModel):
     __tablename__ = "todos"
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)

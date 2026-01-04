@@ -2,22 +2,25 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.infrastructure.types import TodoId
+from app.infrastructure.web.pagination import PaginatedResponse
+
 
 class TodoCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(None, max_length=2000)
 
 
 class TodoUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(None, max_length=2000)
     completed: bool | None = None
 
 
 class TodoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
+    id: TodoId
     title: str
     description: str | None
     completed: bool
@@ -25,6 +28,4 @@ class TodoResponse(BaseModel):
     updated_at: datetime
 
 
-class TodoListResponse(BaseModel):
-    items: list[TodoResponse]
-    total: int
+TodoListResponse = PaginatedResponse[TodoResponse]
