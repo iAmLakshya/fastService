@@ -26,6 +26,28 @@ async def test_list_todos(client: AsyncClient) -> None:
     data = response.json()
     assert data["total"] == 2
     assert len(data["items"]) == 2
+    assert "page" in data
+    assert "page_size" in data
+    assert "total_pages" in data
+    assert "has_next" in data
+    assert "has_prev" in data
+
+
+@pytest.mark.anyio
+async def test_list_todos_pagination(client: AsyncClient) -> None:
+    for i in range(5):
+        await client.post("/api/v1/todos", json={"title": f"Todo {i}"})
+
+    response = await client.get("/api/v1/todos", params={"page": 1, "page_size": 2})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 5
+    assert len(data["items"]) == 2
+    assert data["page"] == 1
+    assert data["page_size"] == 2
+    assert data["total_pages"] == 3
+    assert data["has_next"] is True
+    assert data["has_prev"] is False
 
 
 @pytest.mark.anyio
@@ -40,8 +62,13 @@ async def test_get_todo(client: AsyncClient) -> None:
 
 @pytest.mark.anyio
 async def test_get_todo_not_found(client: AsyncClient) -> None:
-    response = await client.get("/api/v1/todos/nonexistent-id")
+    response = await client.get("/api/v1/todos/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
+    data = response.json()
+    assert "type" in data
+    assert "title" in data
+    assert "status" in data
+    assert "detail" in data
 
 
 @pytest.mark.anyio
