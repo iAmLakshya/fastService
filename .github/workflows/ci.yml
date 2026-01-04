@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        shell: bash
+
+      - name: Update PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Install dependencies
+        run: uv sync
+        shell: bash
+
+      - name: Run ruff linting
+        run: uv run ruff check .
+        shell: bash
+
+      - name: Run ruff formatting check
+        run: uv run ruff format --check .
+        shell: bash
+
+      - name: Run mypy type checking
+        run: uv run mypy src
+        shell: bash
+
+      - name: Run pytest tests
+        run: uv run pytest
+        shell: bash

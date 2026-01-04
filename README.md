@@ -1,6 +1,11 @@
-# FastAPI Service Boilerplate
+# FastService
 
 Production-ready FastAPI boilerplate with clean, scalable architecture.
+
+[![CI](https://github.com/iAmLakshya/fastService/actions/workflows/ci.yml/badge.svg)](https://github.com/iAmLakshya/fastService/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 ## Quick Start
 
@@ -420,6 +425,10 @@ GET /health/live   # Liveness probe
 - [UV](https://docs.astral.sh/uv/)
 - [Ruff](https://docs.astral.sh/ruff/)
 
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a PR.
+
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

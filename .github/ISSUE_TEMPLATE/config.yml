@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/iAmLakshya/fastService/discussions
+    about: Ask questions and discuss ideas for the FastService project
+  - name: Documentation
+    url: https://github.com/iAmLakshya/fastService/wiki
+    about: Visit our documentation for help and guides
