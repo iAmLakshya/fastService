@@ -1,56 +1,48 @@
-"""Application configuration.
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
-Usage:
-    from app.config import settings
+from app.config.base import AppSettings, ServerSettings
+from app.config.database import DatabasesSettings
 
-    # Access grouped settings
-    settings.database.url
-    settings.server.port
-    settings.name
-    settings.is_production
+_settings_override: AppSettings | None = None
 
-Testing:
-    from app.config import configure
 
-    # Override for tests
-    configure(AppSettings(name="Test App", env="testing"))
-"""
-
-from app.config.base import AppSettings, DatabaseSettings, ServerSettings
-
-_settings: AppSettings | None = None
+@lru_cache
+def _create_default_settings() -> AppSettings:
+    return AppSettings()
 
 
 def get_settings() -> AppSettings:
-    """Get current settings. Creates default if not configured."""
-    global _settings
-    if _settings is None:
-        _settings = AppSettings()
-    return _settings
+    if _settings_override is not None:
+        return _settings_override
+    return _create_default_settings()
 
 
 def configure(new_settings: AppSettings) -> None:
-    """Override settings. Useful for testing."""
-    global _settings
-    _settings = new_settings
+    global _settings_override
+    _settings_override = new_settings
 
 
 def reset() -> None:
-    """Reset to default settings. Useful for testing."""
-    global _settings
-    _settings = None
+    global _settings_override
+    _settings_override = None
+    _create_default_settings.cache_clear()
 
 
-# Module-level singleton for convenient access
-# Use: from app.config import settings
-class _SettingsProxy:
-    """Lazy proxy to settings singleton."""
+if TYPE_CHECKING:
+    settings: AppSettings
+else:
 
-    def __getattr__(self, name: str):
-        return getattr(get_settings(), name)
+    class _SettingsProxy:
+        __slots__ = ()
 
+        def __getattr__(self, name: str) -> object:
+            return getattr(get_settings(), name)
 
-settings = _SettingsProxy()
+        def __repr__(self) -> str:
+            return repr(get_settings())
+
+    settings = _SettingsProxy()
 
 __all__ = [
     "settings",
@@ -58,6 +50,6 @@ __all__ = [
     "configure",
     "reset",
     "AppSettings",
-    "DatabaseSettings",
+    "DatabasesSettings",
     "ServerSettings",
 ]
