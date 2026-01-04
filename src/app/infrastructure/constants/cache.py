@@ -1,0 +1,3 @@
+class Cache:
+    DEFAULT_TTL_SECONDS = 300
+    KEY_HASH_LENGTH = 16

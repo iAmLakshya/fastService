@@ -1,0 +1,4 @@
+class Seeder:
+    DEFAULT_ORDER = 100
+    DEFAULT_COUNT = 10
+    CLEAR_FETCH_LIMIT = 1000
